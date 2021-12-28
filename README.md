@@ -1,6 +1,6 @@
 # quarkus-default-configuration-factory-no-subtype-reproducer Project
 
-Reproducer for the issue 
+Reproducer for the issue https://github.com/quarkusio/quarkus/issues/22537
 
 
 When using Quarkus Undertow together with the RESTEasy Reactive dependencies, the application fails to start with this error:

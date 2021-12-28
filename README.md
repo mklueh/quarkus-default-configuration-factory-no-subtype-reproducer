@@ -1,0 +1,110 @@
+# quarkus-default-configuration-factory-no-subtype-reproducer Project
+
+Reproducer for the issue 
+
+
+When using Quarkus Undertow together with the RESTEasy Reactive dependencies, the application fails to start with this error:
+
+`````shell
+2021-12-28 08:13:06,358 ERROR [io.qua.run.boo.StartupActionImpl] (Quarkus Main Thread) Error running Quarkus: java.lang.reflect.InvocationTargetException
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at io.quarkus.runner.bootstrap.StartupActionImpl$1.run(StartupActionImpl.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+Caused by: java.lang.ExceptionInInitializerError
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.ReflectAccess.newInstance(ReflectAccess.java:128)
+	at java.base/jdk.internal.reflect.ReflectionFactory.newInstance(ReflectionFactory.java:347)
+	at java.base/java.lang.Class.newInstance(Class.java:645)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:66)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:41)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:120)
+	at io.quarkus.runner.GeneratedMain.main(Unknown Source)
+	... 6 more
+Caused by: java.lang.RuntimeException: Failed to start quarkus
+	at io.quarkus.runner.ApplicationImpl.<clinit>(Unknown Source)
+	... 17 more
+Caused by: java.util.ServiceConfigurationError: org.jboss.resteasy.spi.config.ConfigurationFactory: org.jboss.resteasy.core.config.DefaultConfigurationFactory not a subtype
+	at java.base/java.util.ServiceLoader.fail(ServiceLoader.java:593)
+	at java.base/java.util.ServiceLoader$LazyClassPathLookupIterator.hasNextService(ServiceLoader.java:1244)
+	at java.base/java.util.ServiceLoader$LazyClassPathLookupIterator.hasNext(ServiceLoader.java:1273)
+	at java.base/java.util.ServiceLoader$2.hasNext(ServiceLoader.java:1309)
+	at java.base/java.util.ServiceLoader$3.hasNext(ServiceLoader.java:1393)
+	at org.jboss.resteasy.spi.config.ConfigurationFactory.getInstance(ConfigurationFactory.java:46)
+	at org.jboss.resteasy.core.ResteasyDeploymentImpl.initializeFactory(ResteasyDeploymentImpl.java:324)
+	at org.jboss.resteasy.core.ResteasyDeploymentImpl.startInternal(ResteasyDeploymentImpl.java:131)
+	at org.jboss.resteasy.core.ResteasyDeploymentImpl.start(ResteasyDeploymentImpl.java:121)
+	at org.jboss.resteasy.plugins.server.servlet.ServletContainerDispatcher.init(ServletContainerDispatcher.java:144)
+	at org.jboss.resteasy.plugins.server.servlet.FilterDispatcher.init(FilterDispatcher.java:47)
+	at io.undertow.servlet.core.LifecyleInterceptorInvocation.proceed(LifecyleInterceptorInvocation.java:112)
+	at io.undertow.servlet.core.ManagedFilter.createFilter(ManagedFilter.java:80)
+	at io.undertow.servlet.core.DeploymentManagerImpl$2.call(DeploymentManagerImpl.java:591)
+	at io.undertow.servlet.core.DeploymentManagerImpl$2.call(DeploymentManagerImpl.java:556)
+	at io.undertow.servlet.core.ServletRequestContextThreadSetupAction$1.call(ServletRequestContextThreadSetupAction.java:42)
+	at io.undertow.servlet.core.ContextClassLoaderSetupAction$1.call(ContextClassLoaderSetupAction.java:43)
+	at io.quarkus.undertow.runtime.UndertowDeploymentRecorder$9$1.call(UndertowDeploymentRecorder.java:566)
+	at io.undertow.servlet.core.DeploymentManagerImpl.start(DeploymentManagerImpl.java:598)
+	at io.quarkus.undertow.runtime.UndertowDeploymentRecorder.bootServletContainer(UndertowDeploymentRecorder.java:517)
+	at io.quarkus.deployment.steps.UndertowBuildStep$build955877346.deploy_0(Unknown Source)
+	at io.quarkus.deployment.steps.UndertowBuildStep$build955877346.deploy(Unknown Source)
+	... 18 more
+
+2021-12-28 08:13:06,453 INFO  [org.jbo.threads] (main) JBoss Threads version 3.4.2.Final
+2021-12-28 08:13:06,648 ERROR [io.qua.dep.dev.IsolatedDevModeMain] (main) Failed to start quarkus: java.lang.RuntimeException: java.util.ServiceConfigurationError: org.jboss.resteasy.spi.config.ConfigurationFactory: org.jboss.resteasy.core.config.DefaultConfigurationFactory not a subtype
+	at io.quarkus.dev.appstate.ApplicationStateNotification.waitForApplicationStart(ApplicationStateNotification.java:51)
+	at io.quarkus.runner.bootstrap.StartupActionImpl.runMainClass(StartupActionImpl.java:122)
+	at io.quarkus.deployment.dev.IsolatedDevModeMain.firstStart(IsolatedDevModeMain.java:145)
+	at io.quarkus.deployment.dev.IsolatedDevModeMain.accept(IsolatedDevModeMain.java:456)
+	at io.quarkus.deployment.dev.IsolatedDevModeMain.accept(IsolatedDevModeMain.java:67)
+	at io.quarkus.bootstrap.app.CuratedApplication.runInCl(CuratedApplication.java:149)
+	at io.quarkus.bootstrap.app.CuratedApplication.runInAugmentClassLoader(CuratedApplication.java:105)
+	at io.quarkus.deployment.dev.DevModeMain.start(DevModeMain.java:145)
+	at io.quarkus.deployment.dev.DevModeMain.main(DevModeMain.java:63)
+Caused by: java.util.ServiceConfigurationError: org.jboss.resteasy.spi.config.ConfigurationFactory: org.jboss.resteasy.core.config.DefaultConfigurationFactory not a subtype
+	at java.base/java.util.ServiceLoader.fail(ServiceLoader.java:593)
+	at java.base/java.util.ServiceLoader$LazyClassPathLookupIterator.hasNextService(ServiceLoader.java:1244)
+	at java.base/java.util.ServiceLoader$LazyClassPathLookupIterator.hasNext(ServiceLoader.java:1273)
+	at java.base/java.util.ServiceLoader$2.hasNext(ServiceLoader.java:1309)
+	at java.base/java.util.ServiceLoader$3.hasNext(ServiceLoader.java:1393)
+	at org.jboss.resteasy.spi.config.ConfigurationFactory.getInstance(ConfigurationFactory.java:46)
+	at org.jboss.resteasy.core.ResteasyDeploymentImpl.initializeFactory(ResteasyDeploymentImpl.java:324)
+	at org.jboss.resteasy.core.ResteasyDeploymentImpl.startInternal(ResteasyDeploymentImpl.java:131)
+	at org.jboss.resteasy.core.ResteasyDeploymentImpl.start(ResteasyDeploymentImpl.java:121)
+	at org.jboss.resteasy.plugins.server.servlet.ServletContainerDispatcher.init(ServletContainerDispatcher.java:144)
+	at org.jboss.resteasy.plugins.server.servlet.FilterDispatcher.init(FilterDispatcher.java:47)
+	at io.undertow.servlet.core.LifecyleInterceptorInvocation.proceed(LifecyleInterceptorInvocation.java:112)
+	at io.undertow.servlet.core.ManagedFilter.createFilter(ManagedFilter.java:80)
+	at io.undertow.servlet.core.DeploymentManagerImpl$2.call(DeploymentManagerImpl.java:591)
+	at io.undertow.servlet.core.DeploymentManagerImpl$2.call(DeploymentManagerImpl.java:556)
+	at io.undertow.servlet.core.ServletRequestContextThreadSetupAction$1.call(ServletRequestContextThreadSetupAction.java:42)
+	at io.undertow.servlet.core.ContextClassLoaderSetupAction$1.call(ContextClassLoaderSetupAction.java:43)
+	at io.quarkus.undertow.runtime.UndertowDeploymentRecorder$9$1.call(UndertowDeploymentRecorder.java:566)
+	at io.undertow.servlet.core.DeploymentManagerImpl.start(DeploymentManagerImpl.java:598)
+	at io.quarkus.undertow.runtime.UndertowDeploymentRecorder.bootServletContainer(UndertowDeploymentRecorder.java:517)
+	at io.quarkus.deployment.steps.UndertowBuildStep$build955877346.deploy_0(Unknown Source)
+	at io.quarkus.deployment.steps.UndertowBuildStep$build955877346.deploy(Unknown Source)
+	at io.quarkus.runner.ApplicationImpl.<clinit>(Unknown Source)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:499)
+	at java.base/java.lang.reflect.ReflectAccess.newInstance(ReflectAccess.java:128)
+	at java.base/jdk.internal.reflect.ReflectionFactory.newInstance(ReflectionFactory.java:347)
+	at java.base/java.lang.Class.newInstance(Class.java:645)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:66)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:41)
+	at io.quarkus.runtime.Quarkus.run(Quarkus.java:120)
+	at io.quarkus.runner.GeneratedMain.main(Unknown Source)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at io.quarkus.runner.bootstrap.StartupActionImpl$1.run(StartupActionImpl.java:103)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+
+`````
